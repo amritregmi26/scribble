@@ -226,13 +226,14 @@ def is_valid_word(word, hand, word_list):
             return False
         
         return is_valid_word_without_wildcard(word, hand)
-        
-    for vowel in VOWELS:
-        wildcard_replaced_word = word.replace(WILDCARD, vowel)
-        if is_valid_word_without_wildcard(wildcard_replaced_word, hand):
-            return True
+    else:   
+        for vowel in VOWELS:
+            wildcard_replaced_word = word.replace(WILDCARD, vowel)
+            print(wildcard_replaced_word)
+            if is_valid_word_without_wildcard(wildcard_replaced_word, hand):
+                return True
 
-    return False
+        return False
 
 # Check if the word is valid
 def is_valid_word_without_wildcard(word, hand):
@@ -410,7 +411,6 @@ def play_game(word_list):
     """
     total_score = 0
     substitute_used = False
-    replay_used = False
     
     # Ask the user for the total number of hands
     total_hands = int(input("Enter the total number of hands: "))
@@ -434,15 +434,6 @@ def play_game(word_list):
         # Play the hand and accumulate the score
         hand_score = play_hand(current_hand, word_list)
         total_score += hand_score
-        
-        # Ask if the user wants to replay the hand
-        if not replay_used:
-            replay_option = input("Do you want to replay this hand? (yes/no): ").lower()
-            if replay_option == 'yes':
-                replay_used = True
-                display_hand(current_hand)
-                hand_score_on_replay = play_hand(current_hand, word_list)
-                total_score += max(hand_score, hand_score_on_replay)
 
     return total_score
 
