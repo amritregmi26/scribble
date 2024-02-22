@@ -94,21 +94,18 @@ def get_word_score(word, n):
     """
     
     word = word.lower()
-    scrabble_value = 0
+    word_length = len(word)
     
     # Calculate the scrabble value
-    for c in word:
-        if not c.isspace():
-            if c == '*':
-                scrabble_value += 1
-            else:
-                scrabble_value += SCRABBLE_LETTER_VALUES[c]
+    scrabble_value = sum(SCRABBLE_LETTER_VALUES.get(letter, 0) for letter in word)
                 
     # Calculate the second component of the score
-    second_component = max(1, 7 * len(word) - 3 * (n - len(word)))
+    second_component = max(1, 7 * word_length - 3 * (n - word_length))
 
     total_score = scrabble_value * second_component
     return total_score
+
+
 #
 # Make sure you understand how this function works and what it does!
 #
@@ -154,9 +151,13 @@ def deal_hand(n):
     # Add one wildcard to the hand
     hand[WILDCARD] = 1
 
-    for i in range(num_vowels+1):
-        x = random.choice(VOWELS)
-        hand[x] = hand.get(x, 0) + 1
+    for i in range(num_vowels):
+        if i == 0:
+            hand[WILDCARD] = 1
+        else:
+            x = random.choice(VOWELS)
+            hand[x] = hand.get(x, 0) + 1
+
 
     for i in range(num_vowels+1, n): 
         x = random.choice(CONSONANTS)
@@ -214,40 +215,34 @@ def is_valid_word(word, hand, word_list):
     word_list: list of lowercase strings
     returns: boolean
     """
-    # Convert the word to lowercase
+
+    # Create a copy of the hand to avoid modifying the original hand
+    new_hand = hand.copy()
+    
+    # Convert the word to lowercase for case-insensitive comparison
     word = word.lower()
 
-    
-    # replacing the wildcard with each vowel to check for validity
-    if WILDCARD not in word:
-        
-        # Return false if the word is not in the word list
-        if word not in word_list:
+    # Check for wildcard in the word
+    if WILDCARD in word:
+        # Replace wildcard with each vowel and check if any variant is in the word list
+        wildcard_word = any(word.replace(WILDCARD, vowel) in word_list for vowel in VOWELS)
+        if not wildcard_word:
             return False
-        
-        return is_valid_word_without_wildcard(word, hand)
-    else:   
-        for vowel in VOWELS:
-            wildcard_replaced_word = word.replace(WILDCARD, vowel)
-            print(wildcard_replaced_word)
-            if is_valid_word_without_wildcard(wildcard_replaced_word, hand):
-                return True
-
+    elif word not in word_list:
         return False
-
-# Check if the word is valid
-def is_valid_word_without_wildcard(word, hand):
     
-    hand_copy = hand.copy()
-    for letter in word:
-        # Use get method to avoid KeyError
-        if hand_copy.get(letter, 0) > 0:
-            hand_copy[letter] -= 1
+    # Check if the letters in the word are available in the hand
+    for letter, count in get_frequency_dict(word).items():
+        if letter in new_hand and new_hand[letter] >= count:
+            new_hand[letter] -= count
         else:
             return False
     
+    # If all checks pass, the word play is valid
     return True
-   
+
+
+
 #
 # Problem #5: Playing a hand
 #
